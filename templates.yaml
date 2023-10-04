@@ -1,0 +1,23 @@
+envs:
+  - name: dev
+    label: Development
+    concurrencies: ["qa"]
+    requireApprove: false
+  - name: qa
+    label: QA
+    concurrencies: ["dev"]
+    requireApprove: false
+  - name: hml
+    label: Homolog
+    requireApprove: false
+  - name: hml
+    label: Homolog
+    requireApprove: true
+templates:
+  - name: spring-boot
+    label: Spring Boot
+    manifests:
+      - code:  aws-ecr
+			  label: Aws ECR
+			  type:  registry
+			  dir:   manifests/registry/aws-ecr

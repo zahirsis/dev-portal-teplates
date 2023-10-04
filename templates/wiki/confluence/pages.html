@@ -1,0 +1,26 @@
+<div class="contentLayout2">
+    <div class="columnLayout two-right-sidebar" data-layout="two-right-sidebar">
+        <div class="cell normal" data-type="normal">
+            <div class="innerCell">
+                <h2 id="Microservices-VisãoGeral">Visão Geral</h2>
+                <p>Esta documentação fornece uma visão geral de todos os micro serviços em nossa organização que passaram pelo novo processo de automatização do processo de CI/CD. Cada micro serviço possui sua própria página de documentação individual dentro desta pasta.</p>
+                <p>A seguir, você encontrará uma lista de todos os micro serviços disponíveis, bem como links para suas respectivas páginas de documentação.</p>
+                <h2 id="Microservices-ListadeMicroServiços">Lista de Micro Serviços</h2>
+                <ol start="1">
+                    {{range .Pages}}
+                    <li><p><a href="{{.Link}}">{{.Title}}</a></p></li>
+                    {{end}}
+                </ol>
+                <h2 id="Microservices-AcessoàsPáginasdeMicroServiços">Acesso às Páginas de Micro Serviços</h2>
+                <p>Você pode acessar a documentação de cada micro serviço clicando nos links acima ou clicando nas paginas desta sessão. Cada página contém informações detalhadas sobre o respectivo micro serviço, incluindo informações sobre o serviço em si e a infraestrutura associada.</p>
+                <h2 id="Microservices-ConsideraçõesFinais">Considerações Finais</h2>
+                <p>Esta documentação serve como um ponto de acesso central para todas as páginas de documentação de micro serviços em nossa organização, o intuito é que no futuro todo micro serviço esteja catalogado neste ponto central. Cada página individual fornece informações detalhadas sobre o micro serviço correspondente e sua infraestrutura. Para acessar a documentação de um micro serviço específico, basta clicar no link correspondente na lista acima.</p>
+            </div>
+        </div>
+        <div class="cell aside" data-type="aside">
+            <div class="innerCell">
+                <p></p>
+            </div>
+        </div>
+    </div>
+</div>

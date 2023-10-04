@@ -1,0 +1,17 @@
+{
+  "Version": "2008-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowCrossAccountPush",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": [
+          "arn:aws:iam::516292895518:root",
+          "arn:aws:iam::576022279835:root",
+          "arn:aws:iam::019615086505:root"
+        ]
+      },
+      "Action": "ecr:*"
+    }
+  ]
+}

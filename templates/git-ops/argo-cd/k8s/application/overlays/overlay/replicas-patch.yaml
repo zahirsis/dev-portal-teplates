@@ -1,0 +1,8 @@
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{.ApplicationName}}
+spec:
+  minReplicas: {{.ApplicationMinReplicas}}
+  maxReplicas: {{.ApplicationMaxReplicas}}

@@ -1,0 +1,15 @@
+k8sBaseTemplatesPath: templates/git-ops/argo-cd/k8s/_base
+k8sBaseDestinationPath: microservices/resources/_base
+
+k8sNamespaceUtilitiesTemplatesPath: templates/git-ops/argo-cd/k8s/_namespace_base
+k8sNamespaceUtilitiesDestinationPath: microservices/resources/<namespace>/_base
+
+k8sApplicationTemplatesPath: templates/git-ops/argo-cd/k8s/application
+k8sApplicationDestinationPath: resources/<namespace>/<applicationName>
+
+k8sConfigMapTemplatesPath: templates/git-ops/argo-cd/k8s/configmap
+k8sConfigMapDestinationPath: <namespace>/<applicationName>
+
+gitOpsKustomizationTemplatePath: templates/git-ops/argo-cd/apps/kustomization.yaml
+gitOpsAppTemplatesPath: templates/git-ops/argo-cd/apps/application.yaml
+gitOpsBaseDestinationPath: microservices/apps/<environment>

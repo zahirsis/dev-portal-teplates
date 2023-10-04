@@ -1,0 +1,5 @@
+templatePagePath: templates/wiki/confluence/pages.html
+templateServicePath: templates/wiki/confluence/service.html
+spaceId: "226033681"
+servicesPageId: "226033875"
+servicesPageTitle: Services

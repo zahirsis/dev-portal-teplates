@@ -1,0 +1,50 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{.ApplicationName}}
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`{{.IngressHost}}`) && PathPrefix(`{{.IngressPath}}`) {{if .IngressAuthentication}}&& Method(`OPTIONS`){{end}}
+{{if eq .IngressFrontend false}}
+      middlewares:
+        - name: direct-chain
+          namespace: {{.Namespace}}
+{{if .IngressStripPath}}
+        - name: {{.ApplicationName}}-replace-path
+          namespace: {{.Namespace}}
+{{end}}
+{{end}}
+      services:
+        - kind: Service
+          name: {{.ApplicationName}}
+          namespace: {{.Namespace}}
+          passHostHeader: true
+          port: 80
+          responseForwarding:
+            flushInterval: 1ms
+{{if .IngressAuthentication}}
+    - kind: Rule
+      match: Host(`{{.IngressHost}}`) && PathPrefix(`{{.IngressPath}}`)
+{{if eq .IngressFrontend false}}
+      middlewares:
+        - name: secure-chain
+          namespace: {{.Namespace}}
+{{if .IngressStripPath}}
+        - name: {{.ApplicationName}}-replace-path
+          namespace: {{.Namespace}}
+{{end}}
+{{end}}
+      services:
+        - kind: Service
+          name: {{.ApplicationName}}
+          namespace: {{.Namespace}}
+          passHostHeader: true
+          port: 80
+          responseForwarding:
+            flushInterval: 1ms
+{{end}}

@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{.ApplicationName}}-{{.Environment}}
+  namespace: argocd
+spec:
+  destination:
+    name: {{.DestinationCluster}}
+    namespace: {{.Namespace}}
+  project: {{.Project}}
+  sources:
+    - path: {{.K8sApplicationPath}}
+      repoURL: 'git@bitbucket.org:Project/{{.GitOpsRepository}}.git'
+      targetRevision: HEAD
+    - path: {{.ConfigMapPath}}
+      repoURL: 'git@bitbucket.org:Project/{{.ConfigMapRepository}}.git'
+      targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

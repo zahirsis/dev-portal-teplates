@@ -1,0 +1,4 @@
+region: us-east-1
+registryId: 257578036299
+imageScanningConfiguration:
+  scanOnPush: true

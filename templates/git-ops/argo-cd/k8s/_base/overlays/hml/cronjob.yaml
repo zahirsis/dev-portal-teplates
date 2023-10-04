@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ecr-renew-job
+spec:
+  schedule: "5 */6 * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: ecr-renew
+            image: ginkcode/ecr-kube:latest
+            imagePullPolicy: IfNotPresent
+            envFrom:
+            - secretRef:
+                name: aws-credential
+          restartPolicy: OnFailure

@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.ApplicationName}}
+spec:
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: {{.ApplicationName}}
+  template:
+    metadata:
+      labels:
+        app: {{.ApplicationName}}
+    spec:
+      imagePullSecrets:
+      - name: ecr-registry-secret
+      containers:
+      - name: {{.ApplicationName}}
+        image: IMAGE:TAG
+        ports:
+        - name: http
+          containerPort: {{.ApplicationPort}}
+        resources:
+          limits:
+            cpu: {{.ApplicationCpuLimit}}
+            memory: {{.ApplicationMemoryLimit}}
+          requests:
+            cpu: {{.ApplicationCpuRequest}}
+            memory: {{.ApplicationMemoryRequest}}
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: {{.ApplicationHealthCheckPath}}
+            port: {{.ApplicationPort}}
+            scheme: HTTP
+          initialDelaySeconds: {{.ApplicationInitialDelaySeconds}}
+          periodSeconds: {{.ApplicationHealthCheckPeriodSeconds}}
+          successThreshold: 1
+        livenessProbe:
+          httpGet:
+            path: {{.ApplicationHealthCheckPath}}
+            port: {{.ApplicationPort}}
+          initialDelaySeconds: {{.ApplicationSecondDelaySeconds}}
+          periodSeconds: {{.ApplicationHealthCheckPeriodSeconds}}
+        envFrom:
+        - configMapRef:
+            name: {{.ApplicationName}}
+        - secretRef:
+            name: {{.ApplicationName}}

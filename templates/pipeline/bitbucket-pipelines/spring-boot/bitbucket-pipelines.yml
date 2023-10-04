@@ -1,0 +1,185 @@
+image:
+  name: 257578036299.dkr.ecr.us-east-1.amazonaws.com/ci-tools:1.1.0
+  aws:
+    oidc-role: $AWS_OIDC_ROLE_ARN
+# Use self hosted runner
+self-hosted: &self-hosted
+  oidc: true
+  size: 2x
+  runs-on:
+    - self.hosted
+    - linux
+    - k8s
+  artifacts:
+    - .environment
+# Set Maven Config
+set-maven-config: &set-maven-config |-
+  # CONFIGURE MAVEN
+  # AUTHENTICATE CODE ARTIFACT
+  export AWS_REGION=$AWS_REGION
+  export AWS_ROLE_ARN=$AWS_OIDC_ROLE_ARN
+  export AWS_WEB_IDENTITY_TOKEN_FILE=$(pwd)/web-identity-token
+  echo $BITBUCKET_STEP_OIDC_TOKEN > $(pwd)/web-identity-token
+  export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain $CODEARTIFACT_DOMAIN_NAME --domain-owner $CODEARTIFACT_DOMAIN_OWNER --query authorizationToken --output text --region us-east-1`
+  # SET CONFIG SETTINGS
+  echo $MAVEN_SETTINGS > settings.xml
+  # SET TIMEZONE
+  ln -snf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime && echo America/Sao_Paulo > /etc/timezone
+# Set Environment Variables
+{{if index .Environments "dev"}}
+set-env-dev: &set-env-dev
+  step: 
+    <<: *self-hosted
+    name: Set environment variables
+    script:
+      - echo TAG="${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT::7}" > .environment
+{{end}}
+{{if index .Environments "qa"}}
+set-env-dev: &set-env-qa
+  step: 
+    <<: *self-hosted
+    name: Set environment variables
+    script:
+      - echo TAG="${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT::7}" > .environment
+{{end}}
+{{if index .Environments "hml"}}
+set-env-stg: &set-env-stg
+  step:
+    <<: *self-hosted
+    name: Set environment variables
+    script:
+      - echo TAG="rc-$(grep '<version>' pom.xml | awk 'FNR==2{print $0}' | grep -Eo '([0-9]{1,3}[\.]){2}[0-9]{1,3})*')-${BITBUCKET_COMMIT::7}" > .environment
+{{end}}
+{{if index .Environments "prd"}}
+set-env-prd: &set-env-prd
+  step:
+    <<: *self-hosted
+    name: Set environment variables
+    script:
+      - echo TAG="$(grep '<version>' pom.xml | awk 'FNR==2{print $0}' | grep -Eo '([0-9]{1,3}[\.]){2}[0-9]{1,3})*')" > .environment
+{{end}}
+# Build Maven
+build: &build
+  step:
+    <<: *self-hosted
+    name: Build Maven
+    image:
+      name: 257578036299.dkr.ecr.us-east-1.amazonaws.com/ci-maven:1.0.0
+      aws:
+        oidc-role: $AWS_OIDC_ROLE_ARN
+    script:
+      - *set-maven-config
+      - mvn -s settings.xml clean install
+    artifacts:
+      - target/**
+    caches:
+      - maven
+# Code Quality
+code-quality: &code-quality
+  step:
+    <<: *self-hosted
+    name: Sonarqube Scan
+    image:
+      name: 257578036299.dkr.ecr.us-east-1.amazonaws.com/ci-maven:1.0.0
+      aws:
+        oidc-role: $AWS_OIDC_ROLE_ARN
+    script:
+      - *set-maven-config
+      - mvn -s settings.xml sonar:sonar
+    caches:
+      - maven
+# Package
+package: &package
+  step:
+    <<: *self-hosted
+    name: Package
+    script:
+      - export $(cat .environment | xargs)
+      - docker build -t ${APPLICATION_NAME} .
+      - docker tag ${APPLICATION_NAME}:latest ${APPLICATION_NAME}:${TAG}
+      - pipe: atlassian/aws-ecr-push-image:2.0.0
+        variables:
+          IMAGE_NAME: $APPLICATION_NAME
+          TAGS: "latest ${TAG}"
+          AWS_OIDC_ROLE_ARN: $AWS_OIDC_ROLE_ARN
+    services:
+      - docker
+# Deploy
+deploy: &deploy
+  <<: *self-hosted
+  script:
+    - export $(cat .environment | xargs)
+    - pipe: Project/bp-pipe-deploy:1.0.0
+      variables:
+        BITBUCKET_SERVICE_CREDENTIAL: $BITBUCKET_SERVICE_CREDENTIAL
+        SQUAD_NAME: ${SQUAD_NAME}
+        SERVICE_NAME: ${APPLICATION_NAME}
+        OVERLAY_ENV: $OVERLAY_ENV
+        IMAGE_TAG: $TAG
+# Tag
+tag: &tag
+  step:
+    <<: *self-hosted
+    name: Generate Release Tag
+    script:
+      - export $(cat .environment | xargs)
+      - git tag -d "${TAG}" || true
+      - git push origin --delete "${TAG}" || true
+      - git tag -a "${TAG}" -m "Tagging for release ${TAG}"
+      - git push origin "${TAG}"
+# Pipelines
+pipelines:
+  branches:
+  {{if index .Environments "dev"}}
+    {{range .Environments.dev.Triggers}}
+    {{.Branch}}:
+    - <<: *set-env-dev
+    - <<: *build
+    - <<: *code-quality
+    - <<: *package
+    - step: 
+        <<: *deploy
+        name: Deploy {{.Name}}
+        deployment: {{.Deployment}}
+    {{end}}
+  {{end}}
+  {{if index .Environments "qa"}}
+    {{range .Environments.qa.Triggers}}
+    {{.Branch}}:
+    - <<: *set-env-qa
+    - <<: *build
+    - <<: *code-quality
+    - <<: *package
+    - step: 
+        <<: *deploy
+        name: Deploy {{.Name}}
+        deployment: {{.Deployment}}
+    {{end}}
+  {{end}}
+  {{if index .Environments "hml"}}
+    {{range .Environments.hml.Triggers}}
+    {{.Branch}}:
+    - <<: *set-env-stg
+    - <<: *build
+    - <<: *code-quality
+    - <<: *package
+    - step: 
+        <<: *deploy
+        name: Deploy {{.Name}}
+        deployment: {{.Deployment}}
+    {{end}}
+  {{end}}
+  {{if index .Environments "prd"}}
+    {{range .Environments.prd.Triggers}}
+    {{.Branch}}:
+    - <<: *set-env-prd
+    - <<: *build
+    - <<: *code-quality
+    - <<: *package
+    - step: 
+        <<: *deploy
+        name: Deploy {{.Name}}
+        deployment: {{.Deployment}}
+    - <<: *tag
+    {{end}}
+  {{end}}

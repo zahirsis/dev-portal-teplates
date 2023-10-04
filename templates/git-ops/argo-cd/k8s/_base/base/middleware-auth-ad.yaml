@@ -1,0 +1,12 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: auth-ad
+spec:
+  forwardAuth:
+    address: http://oauth.devops.svc/auth
+    authRequestHeaders:
+      - "access_token"
+      - "Authorization"
+      - "x-api-key"

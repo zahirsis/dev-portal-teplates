@@ -1,0 +1,50 @@
+templatesPath: templates/pipeline/bitbucket-pipelines/spring-boot/bitbucket-pipelines.yml
+destinationPath: bitbucket-pipelines.yml
+initialPipeline: develop*
+defaultVariables:
+  - name: SQUAD_NAME
+    value : <namespace>
+    secure: false
+  - name: APPLICATION_NAME
+    value : <applicationName>
+    secure: false
+environments:
+  dev:
+    triggers:
+      - name: Development
+        branch: develop*
+        deployment: develop
+    variables:
+      - name: OVERLAY_ENV
+        value: dev
+        secure: false
+  qa:
+    triggers:
+      - name: Quality assurance
+        branch: qa*
+        deployment: qa
+    variables:
+      - name: OVERLAY_ENV
+        value: qa
+        secure: false
+  hml:
+    triggers:
+      - name: Homologation
+        branch: hotfix*
+        deployment: homolog
+      - name: Homologation
+        branch: release*
+        deployment: homolog
+    variables:
+      - name: OVERLAY_ENV
+        value: hml
+        secure: false
+  prd:
+    triggers:
+      - name: Production
+        branch: master
+        deployment: production
+    variables:
+      - name: OVERLAY_ENV
+        value: prd
+        secure: false

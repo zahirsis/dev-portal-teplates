@@ -1,0 +1,65 @@
+<h2>Dados base do servi&ccedil;o</h2>
+<ul>
+    <li>
+        <p><strong>Nome</strong>: {{.ApplicationName}}</p>
+    </li>
+    <li>
+        <p><strong>Reposit&oacute;rio Git</strong>: <a href="{{.GitRepository}}">{{.GitRepository}}</a></p>
+    </li>
+    {{if .ServiceWikiLink}}
+    <li>
+        <p><strong><a href="https://{{.ServiceWikiLink}}">Documentação Detalhada</a></strong></p>
+    </li>
+    {{end}}
+    <li>
+        <p><strong>Squad Respons&aacute;vel</strong>: {{.Squad}}</p>
+    </li>
+    <li>
+        <p><strong>Ambientes Dispon&iacute;veis</strong>:</p>
+        <ul>
+            {{range .Environments}}
+            <li>
+                <p>{{.Label}} ({{.Code}})</p>
+            </li>
+            {{end}}
+        </ul>
+    </li>
+    <li>
+        <p><strong>Tipo de Aplica&ccedil;&atilde;o</strong>: {{.Template}}</p>
+    </li>
+    {{if .Exposed}}
+    <li>
+        <p><strong>Endpoints da Raiz da Aplica&ccedil;&atilde;o por Ambiente</strong>:</p>
+        <ul>
+            {{range .Environments}}
+            <li>
+                <p>{{.Label}}: <a href="https://{{.Url}}">https://{{.Url}}</a></p>
+            </li>
+            {{end}}
+        </ul>
+    </li>
+    {{end}}
+</ul>
+<h2>Infraestrutura</h2>
+<ul>
+    <li>
+        <p><strong>Rota de Health Check</strong>: {{.HealthCheck}}</p>
+    </li>
+    <li>
+        <p><strong>Porta da Aplica&ccedil;&atilde;o</strong>: {{.Port}}</p>
+    </li>
+</ul>
+<h2>Links Úteis</h2>
+<ul>
+    {{if .RegistryUrl}}
+    <li>
+        <p><strong><a href="https://{{.RegistryUrl}}">Reposit&oacute;rio ECR</a></strong></p>
+    </li>
+    {{end}}
+    <li>
+        <p><strong><a href="{{.GitOpsUrl}}">Manifestos Kubernetes GitOps</a></strong></p>
+    </li>
+    <li>
+        <p><strong><a href="{{.ConfigMapUrl}}">Manifestos ConfigMap</a></strong></p>
+    </li>
+</ul>

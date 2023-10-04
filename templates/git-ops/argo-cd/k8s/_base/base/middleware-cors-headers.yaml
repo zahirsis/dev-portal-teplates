@@ -1,0 +1,20 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: cors-headers
+spec:
+  headers:
+    accessControlAllowMethods:
+      - "GET"
+      - "OPTIONS"
+      - "PUT"
+      - "DELETE"
+      - "PATCH"
+      - "POST"
+    accessControlAllowOriginList: 
+      - "*"
+    accessControlAllowHeaders: 
+      - "*"
+    accessControlMaxAge: 100
+    addVaryHeader: true
